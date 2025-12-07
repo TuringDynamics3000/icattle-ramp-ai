@@ -146,10 +146,24 @@ function RunCard({ run, onClick }: { run: RunDto; onClick: () => void }) {
           </span>
           <span className="text-slate-500">•</span>
           <span className="text-slate-300">{run.siteId}</span>
-          <span className="text-[10px] text-slate-500">{run.pic}</span>
         </div>
         <StatusChip status={run.status} />
       </div>
+      {/* PIC Information */}
+      {run.picDetails && (
+        <div className="mb-1 flex items-center gap-2 text-[11px]">
+          <span className="font-mono text-emerald-400">{run.pic}</span>
+          <span className="text-slate-500">•</span>
+          <span className="text-slate-300">{run.picDetails.propertyName}</span>
+          <span className="text-slate-500">•</span>
+          <span className="text-slate-400">{run.picDetails.region}</span>
+        </div>
+      )}
+      {!run.picDetails && (
+        <div className="mb-1 text-[11px]">
+          <span className="font-mono text-slate-500">PIC: {run.pic}</span>
+        </div>
+      )}
       <div className="mb-1 flex items-center justify-between text-[11px] text-slate-400">
         <span>
           {run.metadata.truckId && `Truck ${run.metadata.truckId}`}

@@ -38,10 +38,12 @@ export const appRouter = router({
       .query(async ({ input }) => {
         let sql = `
           SELECT 
-            run_id, site_id, run_type, status, pic, truck_id, lot_number,
-            counterparty_name, counterparty_code, notes,
-            created_at, updated_at, confirmed_at
-          FROM icattle_runs
+            r.run_id, r.site_id, r.run_type, r.status, r.pic_code as pic, r.truck_id, r.lot_number,
+            r.counterparty_name, r.counterparty_code, r.notes,
+            r.created_at, r.updated_at, r.confirmed_at,
+            p.property_name, p.region, p.lga, p.jurisdiction
+          FROM icattle_runs r
+          LEFT JOIN pic_registry p ON r.pic_code = p.pic_code
           WHERE 1=1
         `;
         const params: any[] = [];
@@ -86,6 +88,12 @@ export const appRouter = router({
             counterpartyCode: row.counterparty_code,
             notes: row.notes,
           },
+          picDetails: row.property_name ? {
+            propertyName: row.property_name,
+            region: row.region,
+            lga: row.lga,
+            jurisdiction: row.jurisdiction,
+          } : undefined,
         }));
 
         return {
@@ -99,7 +107,10 @@ export const appRouter = router({
       .input(z.object({ runId: z.string() }))
       .query(async ({ input }): Promise<GetRunResponse> => {
         const run = await queryOne<any>(
-          `SELECT * FROM icattle_runs WHERE run_id = $1`,
+          `SELECT r.*, p.property_name, p.region, p.lga, p.jurisdiction
+           FROM icattle_runs r
+           LEFT JOIN pic_registry p ON r.pic_code = p.pic_code
+           WHERE r.run_id = $1`,
           [input.runId]
         );
 
@@ -120,7 +131,7 @@ export const appRouter = router({
           siteId: run.site_id,
           runType: run.run_type,
           status: run.status,
-          pic: run.pic,
+          pic: run.pic_code,
           createdAt: run.created_at.toISOString(),
           metadata: {
             truckId: run.truck_id,
@@ -129,6 +140,12 @@ export const appRouter = router({
             counterpartyCode: run.counterparty_code,
             notes: run.notes,
           },
+          picDetails: run.property_name ? {
+            propertyName: run.property_name,
+            region: run.region,
+            lga: run.lga,
+            jurisdiction: run.jurisdiction,
+          } : undefined,
         };
 
         const animalDtos: RunAnimalDto[] = animals.map((a: any) => ({

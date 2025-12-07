@@ -49,6 +49,13 @@ export interface RunDto {
     counterpartyCode?: string;
     notes?: string;
   };
+  // PIC registry details (joined from pic_registry table)
+  picDetails?: {
+    propertyName: string;
+    region: string;
+    lga: string;
+    jurisdiction: string;
+  };
 }
 
 export interface RunSummaryDto {

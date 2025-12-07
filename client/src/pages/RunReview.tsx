@@ -112,10 +112,22 @@ function RunReviewHeader({ run }: { run: GetRunResponse }) {
             </span>
             <span className="text-slate-500">•</span>
             <span className="text-slate-300">{run.siteId}</span>
-            <span className="font-mono text-[10px] text-slate-500">
-              {run.pic}
-            </span>
           </div>
+          {/* PIC Information */}
+          {run.picDetails && (
+            <div className="flex items-center gap-2 text-[11px]">
+              <span className="font-mono text-emerald-400">{run.pic}</span>
+              <span className="text-slate-500">•</span>
+              <span className="text-slate-300">{run.picDetails.propertyName}</span>
+              <span className="text-slate-500">•</span>
+              <span className="text-slate-400">{run.picDetails.region}</span>
+            </div>
+          )}
+          {!run.picDetails && (
+            <div className="text-[11px]">
+              <span className="font-mono text-slate-500">PIC: {run.pic}</span>
+            </div>
+          )}
           <p className="text-[11px] text-slate-500">
             {run.summary.totalDetected} detected • {run.summary.totalIncluded}{" "}
             included

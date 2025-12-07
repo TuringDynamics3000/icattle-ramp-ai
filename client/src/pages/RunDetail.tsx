@@ -60,10 +60,22 @@ export function RunDetailPage() {
               </span>
               <span className="text-slate-500">•</span>
               <span className="text-slate-300">{run.siteId}</span>
-              <span className="font-mono text-xs text-slate-500">
-                {run.pic}
-              </span>
             </div>
+            {/* PIC Information */}
+            {run.picDetails && (
+              <div className="mt-1 flex items-center gap-2 text-xs">
+                <span className="font-mono text-emerald-400">{run.pic}</span>
+                <span className="text-slate-500">•</span>
+                <span className="text-slate-300">{run.picDetails.propertyName}</span>
+                <span className="text-slate-500">•</span>
+                <span className="text-slate-400">{run.picDetails.region}, {run.picDetails.jurisdiction}</span>
+              </div>
+            )}
+            {!run.picDetails && (
+              <div className="mt-1 text-xs">
+                <span className="font-mono text-slate-500">PIC: {run.pic}</span>
+              </div>
+            )}
             <p className="text-xs text-slate-500">
               {new Date(run.createdAt).toLocaleString("en-AU")}
             </p>
