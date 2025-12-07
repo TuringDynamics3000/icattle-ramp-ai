@@ -19,7 +19,7 @@ export function RunListPage() {
       <div className="mb-3 flex items-center justify-between">
         <h1 className="text-base font-semibold text-slate-100">Ramp runs</h1>
         <button
-          onClick={() => setLocation("/runs/new")}
+          onClick={() => setLocation("/runs/create")}
           className="rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-slate-950"
         >
           Start new run

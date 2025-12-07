@@ -296,6 +296,7 @@ export const appRouter = router({
       .input(
         z.object({
           siteId: z.string(),
+          picCode: z.string().length(8, "PIC code must be 8 characters"),
           runType: z.enum(["INCOMING", "OUTGOING"]),
           truckId: z.string().optional(),
           lotNumber: z.string().optional(),
@@ -307,20 +308,28 @@ export const appRouter = router({
       .mutation(async ({ input }): Promise<RunDto> => {
         const runId = `RUN-${Date.now()}`;
 
-        // Get site PIC
-        const site = await queryOne<any>(
-          `SELECT pic FROM icattle_sites WHERE site_id = $1`,
-          [input.siteId]
+        // Validate PIC exists and is active
+        const pic = await queryOne<any>(
+          `SELECT pic_code, property_name, is_active FROM pic_registry WHERE pic_code = $1`,
+          [input.picCode]
         );
 
+        if (!pic) {
+          throw new Error(`PIC code ${input.picCode} not found in registry`);
+        }
+
+        if (!pic.is_active) {
+          throw new Error(`PIC code ${input.picCode} is not active`);
+        }
+
         await query(
-          `INSERT INTO icattle_runs (run_id, site_id, run_type, status, pic, truck_id, lot_number, counterparty_name, counterparty_code, notes)
+          `INSERT INTO icattle_runs (run_id, site_id, run_type, status, pic_code, truck_id, lot_number, counterparty_name, counterparty_code, notes)
            VALUES ($1, $2, $3, 'DRAFT', $4, $5, $6, $7, $8, $9)`,
           [
             runId,
             input.siteId,
             input.runType,
-            site?.pic || "UNKNOWN",
+            input.picCode,
             input.truckId,
             input.lotNumber,
             input.counterpartyName,
@@ -334,7 +343,7 @@ export const appRouter = router({
           siteId: input.siteId,
           runType: input.runType,
           status: "DRAFT",
-          pic: site?.pic || "UNKNOWN",
+          pic: input.picCode,
           createdAt: new Date().toISOString(),
           metadata: {
             truckId: input.truckId,
