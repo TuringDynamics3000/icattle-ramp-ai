@@ -2,6 +2,7 @@ import { initTRPC } from "@trpc/server";
 import { z } from "zod";
 import superjson from "superjson";
 import { query, queryOne } from "./db";
+import { emitRunCreated, emitRunConfirmed, emitNlisExportGenerated } from "./services/RampEventService";
 import type {
   RunDto,
   GetRunResponse,
@@ -248,6 +249,27 @@ export const appRouter = router({
 
         if (!run) throw new Error("Run not found");
 
+        // Get animal count for the run
+        const animalCountResult = await queryOne<any>(
+          `SELECT COUNT(*) as count FROM icattle_run_animals WHERE run_id = $1 AND excluded = false`,
+          [input.runId]
+        );
+        const animalCount = parseInt(animalCountResult?.count || '0');
+
+        // Emit RUN_CONFIRMED event to TuringCore Protocol
+        await emitRunConfirmed({
+          runId: input.runId,
+          siteId: run.site_id,
+          picCode: run.pic_code,
+          runType: run.run_type,
+          animalCount,
+          metadata: {
+            truckId: run.truck_id,
+            lotNumber: run.lot_number,
+            counterpartyName: run.counterparty_name,
+          },
+        });
+
         // Create NLIS export
         const exportId = `EXP-${input.runId}`;
         await query(
@@ -258,11 +280,24 @@ export const appRouter = router({
             exportId,
             input.runId,
             run.site_id,
-            run.pic,
+            run.pic_code,
             `nlis-${input.runId}.csv`,
             `/api/exports/${input.runId}.csv`,
           ]
         );
+
+        // Emit NLIS_EXPORT_GENERATED event to TuringCore Protocol
+        await emitNlisExportGenerated({
+          runId: input.runId,
+          siteId: run.site_id,
+          picCode: run.pic_code,
+          runType: run.run_type,
+          exportId,
+          fileName: `nlis-${input.runId}.csv`,
+          metadata: {
+            animalCount,
+          },
+        });
 
         return { success: true, exportId };
       }),
@@ -337,6 +372,20 @@ export const appRouter = router({
             input.notes,
           ]
         );
+
+        // Emit RUN_CREATED event to TuringCore Protocol
+        await emitRunCreated({
+          runId,
+          siteId: input.siteId,
+          picCode: input.picCode,
+          runType: input.runType,
+          metadata: {
+            truckId: input.truckId,
+            lotNumber: input.lotNumber,
+            counterpartyName: input.counterpartyName,
+            counterpartyCode: input.counterpartyCode,
+          },
+        });
 
         return {
           runId,
