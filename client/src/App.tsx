@@ -3,6 +3,7 @@ import { RunListPage } from "./pages/RunList";
 import { RunReviewPage } from "./pages/RunReview";
 import { RunDetailPage } from "./pages/RunDetail";
 import { AnimalHistoryPage } from "./pages/AnimalHistory";
+import { PicSearchDemo } from "./pages/PicSearchDemo";
 
 export function App() {
   return (
@@ -12,6 +13,7 @@ export function App() {
       <Route path="/runs/:runId/review" component={RunReviewPage} />
       <Route path="/runs/:runId" component={RunDetailPage} />
       <Route path="/animals/:animalId" component={AnimalHistoryPage} />
+      <Route path="/pic-search" component={PicSearchDemo} />
       <Route>
         <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-50">
           <div className="text-center">
